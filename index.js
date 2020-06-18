@@ -48,12 +48,13 @@ module.exports.typeOf = typeOf;
  * first: takes an array and a number and returns the first n elements of the array
  * 
  * @param {array} array: the array to collect elements from to return
- * @param {*} array: edge cases - if a datatype other than an array is passed in, function will return empty array
  * 
  * @param {Number} number: the number of elements that should be returned from <array>, starting from the beginning of the array
- * @param {*} number: edge cases - if a number not passed in as arg, will return the first element of the array
  * 
- * @return {Array}: returns an array of elements; some edge cases will cause a single element to be returned
+ * @return {Array}: returns an array of elements. Edge Cases:
+ *                  - a non-array passed into array param or negative number passed in to number param will cause the return of an empty array; 
+ *                  - if number not given or datatype passed in is not a number, first element of array will be returned;
+ *                  - if number passed in is greater than length of the array, the entire array is returned
  * 
  */
  
@@ -77,12 +78,13 @@ module.exports.first = first;
  * last: takes an array and number and returns the last n elements of the array
  * 
  * @param {array} array: the array to collect elements from to return
- * @param {*} array: edge cases - if passed in a value that is not an array, will return empty array
  * 
  * @param {number} number: the number of elements to return from the end of the array passed in
- * @param {*} number: edge cases - if value with datatype other than number passed in to number parameter, will return last element of array
  * 
- * @return {Array}: Returns an array of elements from the end of the array passed in. Some edge cases will cause a single element to be returned
+ * @return {Array}: Returns an array of elements from the end of the array passed in. Edge Cases:
+ *                  - A value that is not an array passed into array or a negative number passed into number will result in a blank array being returned
+ *                  - If number is not passed in or a value that is not a number is passed in to number parameter, last element of the array will be returned
+ *                  - if number passed in is greater than the length of array, the entire array is returned
  *
  */
  
@@ -206,7 +208,7 @@ module.exports.unique = unique;
  * 
  * @param {Array} arr: the array to be iterated over and whose elements will undergo the test func
  * 
- * @param {Function} func: the test function that will be executed on each element of the passed in array
+ * @param {Function} func: the test function that will be executed on each element, index, and array of the passed in array
  * 
  * @return {Array}: an array of all elements that passed the test function
  * 
@@ -231,7 +233,7 @@ module.exports.filter = filter;
  * 
  * @param {Array} arr: the array to be iterated over and whose elements will undergo the test func
  * 
- * @param {Function} func: the test function that will be executed on each element of the passed in array
+ * @param {Function} func: the test function that will be executed on each element, index, and array of the passed in array
  * 
  * @return {Array}: an array compiled of all elements that failed the test function
  * 
@@ -256,7 +258,7 @@ module.exports.reject = reject;
  * 
  * @param {Array} arr: the array to be iterated over and whose elements will undergo the test func
  * 
- * @param {Function} func: the test function that will be executed on each element of the passed in array
+ * @param {Function} func: the test function that will be executed on each element, index, and array of the passed in array
  * 
  * @return {Array}: an array of two subarrays, the first of which contains all passed elements from arr, and the second which contains all failed elements from arr
  * 
@@ -323,7 +325,7 @@ module.exports.pluck = pluck;
 
 
  /**
- * every: takes in a collection and returns true if each element of <collection> passes a test function
+ * every: takes in a collection and returns true if each element of <collection> passes a test function; if no callback funtion passed in, the truthy-ness of each element is checked, and true is returned if every element is truthy
  * 
  * @param {Array or Object} collection: the collection to be iterated over; each element will have the test function executed on it
  * 
@@ -372,7 +374,7 @@ module.exports.every = every;
 
 
  /**
- * some: takes in a collection and returns true if even one element from <collection> passes a test function
+ * some: takes in a collection and returns true if even one element from <collection> passes a test function; if no callback function is passed in, the truthy-ness of each element is checked. If any element has a truthy value, true is returned
  * 
  * @param {Array or Object} collection: an array or object containing elements to run a test function on to test for truthiness
  * 
@@ -427,22 +429,26 @@ module.exports.some = some;
  * 
  * @param {Function} func: the function to run over each of array's elements; the return of the function call will be passed into the function as a parameter during the next iteration
  * 
- * @param {*} seed: a value that is passed into the function as an argument; is assigned to the value of first element of the array if not passed in
+ * @param {*} seed: an optional value that is passed into the function as an argument; is assigned to the value of first element of the array if not passed in
+ * 
+ * @return {*}: the reduce function will return the value returned from the final callback function call; the value can be any datatype, depending on the output of the callback function passed in
  * 
  */
  
 function reduce(array, func, seed) {
+    let previousResult;
     if (seed === undefined) {
-        seed = array[0];
+        previousResult = array[0];
         for (let i = 1; i < array.length; i++) {
-            seed = func(seed, array[i], i);
+            previousResult = func(previousResult, array[i], i);
         }
-    } else {
-        for (let i = 0; i < array.length; i++) {
-            seed = func(seed, array[i], i);
+    } else {                                        // if seed is passed in, we'll run the same code, but run the function starting at the first element of array
+        previousResult = seed;
+        for (let i = 0; i < array.length; i++) {        // iterate over array
+            previousResult = func(previousResult, array[i], i);             // at each index, call func with parameters of seed and the array's element and index. Pass function's return value back to seed
         }
     }
-    return seed;
+    return previousResult;                                    // return seed after last function call
 }
 
 module.exports.reduce = reduce;
